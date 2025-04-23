@@ -4,11 +4,9 @@ import java.io.IOException;
 
 public interface CryptoService {
 
-    void encryptFile(String inputFilePath,
-                     String outputFilePath, byte[] key) throws IOException;
+    byte[] encryptFile(String inputFilePath, byte[] key) throws IOException;
 
-    void decryptFile(String inputFilePath,
-                     String outputFilePath, byte[] key) throws IOException;
+    byte[] decryptFile(byte[] encryptedData, byte[] key) throws IOException;
 
     void validateKey(byte[] key);
 }

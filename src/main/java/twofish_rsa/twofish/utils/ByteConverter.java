@@ -1,6 +1,7 @@
 package twofish_rsa.twofish.utils;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public final class ByteConverter {
@@ -38,6 +39,14 @@ public final class ByteConverter {
             S0 |= ((0xFF & bytes[i]) << (i * 8));
         }
         return S0;
+    }
+
+    public static byte[] convertListToArray(ArrayList<Byte> list) {
+        byte[] array = new byte[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i);
+        }
+        return array;
     }
 
 }

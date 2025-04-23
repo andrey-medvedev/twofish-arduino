@@ -25,41 +25,39 @@ public class TwoFishCryptoServiceImpl implements CryptoService {
     }
 
     @Override
-    public void encryptFile(String inputFilePath, String outputFilePath, byte[] key) throws IOException {
+    public byte[] encryptFile(String inputFilePath, byte[] key) throws IOException {
         validateKey(key);
         byte[] data = Files.readAllBytes(Paths.get(inputFilePath));
         byte[] paddedData = PaddingUtils.addPadding(data);
         int[] keyInts = KeyGeneratorUtil.convertKey(key);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        for (int i = 0; i < paddedData.length; i += 16) {
-            byte[] block = Arrays.copyOfRange(paddedData, i, i + 16);
-            int[] blockInts = ByteConverter.bytesToInts(block);
-            int[] encryptedBlock = twoFishAlgorithm.encrypt(blockInts, keyInts);
-            byte[] encryptedBytes = ByteConverter.intsToBytes(encryptedBlock);
-            outputStream.write(encryptedBytes);
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            for (int i = 0; i < paddedData.length; i += 16) {
+                byte[] block = Arrays.copyOfRange(paddedData, i, i + 16);
+                int[] blockInts = ByteConverter.bytesToInts(block);
+                int[] encryptedBlock = twoFishAlgorithm.encrypt(blockInts, keyInts);
+                byte[] encryptedBytes = ByteConverter.intsToBytes(encryptedBlock);
+                outputStream.write(encryptedBytes);
+            }
+            return outputStream.toByteArray();
         }
-
-        Files.write(Paths.get(outputFilePath), outputStream.toByteArray());
     }
 
     @Override
-    public void decryptFile(String inputFilePath, String outputFilePath, byte[] key) throws IOException {
+    public byte[] decryptFile(byte[] encryptedData, byte[] key) throws IOException {
         validateKey(key);
-        byte[] encryptedData = Files.readAllBytes(Paths.get(inputFilePath));
         int[] keyInts = KeyGeneratorUtil.convertKey(key);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        for (int i = 0; i < encryptedData.length; i += 16) {
-            byte[] block = Arrays.copyOfRange(encryptedData, i, i + 16);
-            int[] blockInts = ByteConverter.bytesToInts(block);
-            int[] decryptedBlock = twoFishAlgorithm.decrypt(blockInts, keyInts);
-            byte[] decryptedBytes = ByteConverter.intsToBytes(decryptedBlock);
-            outputStream.write(decryptedBytes);
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            for (int i = 0; i < encryptedData.length; i += 16) {
+                byte[] block = Arrays.copyOfRange(encryptedData, i, i + 16);
+                int[] blockInts = ByteConverter.bytesToInts(block);
+                int[] decryptedBlock = twoFishAlgorithm.decrypt(blockInts, keyInts);
+                byte[] decryptedBytes = ByteConverter.intsToBytes(decryptedBlock);
+                outputStream.write(decryptedBytes);
+            }
+            return PaddingUtils.removePadding(outputStream.toByteArray());
         }
-
-        byte[] decryptedData = PaddingUtils.removePadding(outputStream.toByteArray());
-        Files.write(Paths.get(outputFilePath), decryptedData);
     }
 
     @Override
